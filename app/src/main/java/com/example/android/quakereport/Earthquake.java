@@ -4,10 +4,10 @@ public class Earthquake {
 
     private double magnitude;
     private String place;
-    private String day;
+    private long day;
 
 
-    public Earthquake(double magnitude, String place, String day) {
+    public Earthquake(double magnitude, String place, long day) {
         this.magnitude = magnitude;
         this.place = place;
         this.day = day;
@@ -29,11 +29,11 @@ public class Earthquake {
         this.place = place;
     }
 
-    public String getDay() {
+    public long getDay() {
         return day;
     }
 
-    public void setDay(String day) {
+    public void setDay(long day) {
         this.day = day;
     }
 }
