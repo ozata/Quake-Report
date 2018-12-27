@@ -25,7 +25,7 @@ import java.util.List;
 public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
 
     private Context mContext;
-    private List<Earthquake> earthquakeList = new ArrayList<>();
+    private List<Earthquake> earthquakeList = new ArrayList<Earthquake>();
 
     //Want to show only one decimal.
     DecimalFormat formatter = new DecimalFormat("0.0");
