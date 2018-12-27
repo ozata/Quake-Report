@@ -15,7 +15,9 @@
  */
 package com.example.android.quakereport;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,47 +33,72 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
     private static final String USGS_REQUEST_URL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
+    private static final int EARTHQUAKE_LOADER_ID = 1;
 
     private ListView earthquakeListView;
     private EarthquakeAdapter mAdapter;
 
-    private class EarthquakeAsyncTask extends AsyncTask<String, Void, List<Earthquake>> {
 
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
+        // TODO: Create a new loader for the given URL
+        return new EarthquakeLoader(this, USGS_REQUEST_URL);
+    }
 
-        /**
-         * This method runs on a background thread and performs the network request.
-         * We should not update the UI from a background thread, so we return a list of
-         * {@link Earthquake}s as the result.
-         */
-        @Override
-        protected List<Earthquake> doInBackground(String... urls) {
-            // Don't perform the request if there are no URLs, or the first URL is null.
-            if (urls.length < 1 || urls[0] == null) {
-                return null;
-            }
-
-            List<Earthquake> result = QueryUtils.fetchEarthquakeData(urls[0]);
-            return result;
-        }
-
-
-        @Override
-        protected void onPostExecute(List<Earthquake> data) {
-
-            // Clear the adapter of previous earthquake Data
-            mAdapter.clear();
-
-            // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
-            // data set. This will trigger the ListView to update.
-            if (data != null && !data.isEmpty()) {
-                mAdapter.addAll(data);
-            }
+    @Override
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        // Clear the adapter of previous earthquake data
+        mAdapter.clear();
+        // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+        // data set. This will trigger the ListView to update.
+        if (earthquakes != null && !earthquakes.isEmpty()) {
+            mAdapter.addAll(earthquakes);
         }
     }
+
+    @Override
+    public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        // TODO: Loader reset, so we can clear out our existing data.
+        mAdapter.clear();
+    }
+
+    /**
+     * private class EarthquakeAsyncTask extends AsyncTask<String, Void, List<Earthquake>> {
+     * <p>
+     * <p>
+     * <p>
+     * This method runs on a background thread and performs the network request.
+     * We should not update the UI from a background thread, so we return a list of
+     * {@link Earthquake}s as the result.
+     *
+     * @Override protected List<Earthquake> doInBackground(String... urls) {
+     * // Don't perform the request if there are no URLs, or the first URL is null.
+     * if (urls.length < 1 || urls[0] == null) {
+     * return null;
+     * }
+     * <p>
+     * List<Earthquake> result = QueryUtils.fetchEarthquakeData(urls[0]);
+     * return result;
+     * }
+     * @Override protected void onPostExecute(List<Earthquake> data) {
+     * <p>
+     * // Clear the adapter of previous earthquake Data
+     * mAdapter.clear();
+     * <p>
+     * // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+     * // data set. This will trigger the ListView to update.
+     * if (data != null && !data.isEmpty()) {
+     * mAdapter.addAll(data);
+     * }
+     * }
+     * <p>
+     * }
+     */
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +120,7 @@ public class EarthquakeActivity extends AppCompatActivity {
         // to open a website with more information about the selected earthquake.
         earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position,long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 // Find the current earthquake that was clicked on
                 Earthquake currentEarthquake = mAdapter.getItem(position);
 
@@ -110,8 +137,9 @@ public class EarthquakeActivity extends AppCompatActivity {
 
 
         // Start the AsyncTask to fetch the Earthquake Data
-        EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-        task.execute(USGS_REQUEST_URL);
+        // Get a reference to the Loader Manager, in order to interact with the loaders
+        LoaderManager loaderManager = getLoaderManager();
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
 
     }
 
